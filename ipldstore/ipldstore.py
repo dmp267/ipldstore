@@ -1,4 +1,4 @@
-"""
+x"""
 Implementation of a MutableMapping based on IPLD data structures.
 """
 
@@ -50,14 +50,19 @@ class IPLDStore(MutableMappingSB):
     def __init__(self, castore: Optional[ContentAddressableStore] = None, sep: str = "/", should_async_get: bool = True):
         self._mapping: Dict[str, Union[bytes, dag_cbor.encoding.EncodableType]] = {}
         self._store = castore or MappingCAStore()
-        if isinstance(self._store, IPFSStore) and should_async_get:
-            # Monkey patch zarr to use the async get of multiple chunks
-            def storage_getitems(kv_self, keys, on_error="omit"):
-                return kv_self._mutable_mapping.getitems(keys)
-            import zarr
-            zarr.KVStore.getitems = storage_getitems
-        self.sep = sep
-        self.root_cid: Optional[CID] = None
+        try:
+            if isinstance(self._store, IPFSStore) and should_async_get:
+                # Monkey patch zarr to use the async get of multiple chunks
+                def storage_getitems(kv_self, keys, on_error="omit"):
+                    return kv_self._mutable_mapping.getitems(keys)
+                import zarr
+                zarr.KVStore.getitems = storage_getitems
+            self.sep = sep
+            self.root_cid: Optional[CID] = None
+        except Exception as e:
+            print(e)
+
+
 
     def getitems(self, keys: List[str]) -> Dict[str, bytes]:
         if not isinstance(self._store, IPFSStore):
