@@ -26,9 +26,16 @@ else:
 
 
 class IPLDStore(MutableMappingSB):
-    def __init__(self, castore: Optional[ContentAddressableStore] = None, sep: str = "/", should_async_get: bool = True):
+    def __init__(
+        self,
+        host: str,
+        castore: Optional[ContentAddressableStore] = None,
+        sep: str = "/",
+        should_async_get: bool = True,
+    ):
+        self._host = host
         # In this iteration of IPLDStore, we use a HAMT to store zarr chunks instead of a dict
-        self._mapping = HamtWrapper()
+        self._mapping = HamtWrapper(self._host)
         self._store = castore or MappingCAStore()
         if isinstance(self._store, IPFSStore) and should_async_get:
             # Monkey patch zarr to use the async get of multiple chunks
@@ -119,7 +126,7 @@ class IPLDStore(MutableMappingSB):
 
     def clear(self) -> None:
         self.root_cid = None
-        self._mapping = HamtWrapper()
+        self._mapping = HamtWrapper(self._host)
 
     @overload
     def to_car(self, stream: BufferedIOBase) -> int:
@@ -150,7 +157,7 @@ class IPLDStore(MutableMappingSB):
         assert cid in self._store
         self.root_cid = cid
         whole_mapping = self._store.get(cid)
-        self._mapping = HamtWrapper.from_dict(whole_mapping)
+        self._mapping = HamtWrapper.from_dict(whole_mapping, self._host)
 
 
 _T = TypeVar("_T")
