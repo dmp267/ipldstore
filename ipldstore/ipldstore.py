@@ -5,6 +5,7 @@ Implementation of a MutableMapping based on IPLD data structures.
 from io import BufferedIOBase
 from collections.abc import MutableMapping
 import sys
+import time
 from typing import Optional, Callable, Any, TypeVar, Union, Iterator, overload, List, Dict
 
 from multiformats import CID
