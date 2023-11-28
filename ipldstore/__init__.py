@@ -7,10 +7,6 @@ from .contentstore import ContentAddressableStore, MappingCAStore, IPFSStore
 
 import os
 
-# IPFS_HOST = "http://127.0.0.1:5001"
-# IPFS_HOST = "http://172.17.0.6:5001"
-
-
 
 def get_ipfs_mapper(
     host: str = "http://127.0.0.1:5001",
