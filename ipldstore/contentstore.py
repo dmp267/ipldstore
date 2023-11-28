@@ -238,9 +238,7 @@ class IPFSStore(ContentAddressableStore):
         return ret_tree
 
     def get(self, cid: CID) -> ValueType:
-        print(f'CID {cid} of raw')
         value = self.get_raw(cid)
-        print(f'raw {value}')
         if cid.codec == DagPbCodec:
             return value
         elif cid.codec == DagCborCodec:
@@ -254,16 +252,13 @@ class IPFSStore(ContentAddressableStore):
         return ret
 
     def get_raw(self, cid: CID) -> bytes:
-        print(f'validating')
         validate(cid, CID)
 
         session = get_retry_session()
     
         if cid.codec == DagPbCodec:
-            print(f'catting {str(cid)} with host {self._host}')
             res = session.post(self._host + "/api/v0/cat", params={"arg": str(cid)})
         else:
-            print(f'getting block {str(cid)} with host {self._host}')
             res = session.post(self._host + "/api/v0/block/get", params={"arg": str(cid)})
         res.raise_for_status()
         return res.content
