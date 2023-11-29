@@ -172,7 +172,7 @@ class IPFSStore(ContentAddressableStore):
         validate(cid, CID)
 
         session = get_retry_session()
-
+    
         if cid.codec == DagPbCodec:
             res = session.post(self._host + "/api/v0/cat", params={"arg": str(cid)})
         else:
