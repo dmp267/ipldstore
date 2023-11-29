@@ -14,6 +14,7 @@ if ADAPTER_SECRETS is not None:
     IPFS_HOST = f'http://{json.loads(ADAPTER_SECRETS).get("IPFS_HOST", None)}'
 elif IPFS_HOST is not None:
     IPFS_HOST = f'http://{IPFS_HOST}'
+print(f'IPFS HOST base: {IPFS_HOST}')
 
 
 def get_ipfs_mapper(
