@@ -26,3 +26,4 @@ def get_ipfs_mapper(
     print(f'ipfs mapper host: {host}')
 
     return IPLDStore(IPFSStore(host, chunker=chunker, max_nodes_per_level=max_nodes_per_level), should_async_get=should_async_get)
+
