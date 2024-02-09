@@ -7,6 +7,7 @@ Implementation of a MutableMapping based on IPLD data structures.
 from io import BufferedIOBase
 from collections.abc import MutableMapping
 import sys
+import time
 from dataclasses import dataclass
 from typing import Optional, Callable, Any, TypeVar, Union, Iterator, overload, List, Dict
 import json
@@ -65,6 +66,7 @@ class IPLDStore(MutableMappingSB):
         cid_to_key_map = {}
         key_to_bytes_map = {}
         to_async_get = []
+        start = time.time()
         for key in keys:
             key_parts = key.split(self.sep)
             get_value = get_recursive(self._mapping, key_parts)
@@ -79,10 +81,22 @@ class IPLDStore(MutableMappingSB):
                 assert isinstance(get_value, CID)
                 cid_to_key_map[get_value] = key
                 to_async_get.append(get_value)
+                
+        print(f'HAMT ops time:  {time.time() - start} seconds')
+        print('------------------------------------------------')
+        print()
+
+        start = time.time()
         # Get the bytes for all CIDs asynchronously
         cid_to_bytes_map = self._store.getitems(to_async_get)
         for cid, key in cid_to_key_map.items():
+            print(f'Asynchronously accessing CID "{cid}" with key "{key}"')
             key_to_bytes_map[key] = cid_to_bytes_map[cid]
+
+        print()
+        print('------------------------------------------------')
+        print(f'Data bytes retrieval time:  {time.time() - start}')
+            
         return key_to_bytes_map
 
     def __getitem__(self, key: str) -> bytes:
