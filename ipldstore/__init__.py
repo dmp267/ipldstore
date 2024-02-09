@@ -14,7 +14,7 @@ if ADAPTER_SECRETS is not None:
     IPFS_HOST = f'http://{json.loads(ADAPTER_SECRETS).get("IPFS_HOST", None)}'
 elif IPFS_HOST is not None:
     IPFS_HOST = f'http://{IPFS_HOST}'
-print(f'IPFS HOST base: {IPFS_HOST}')
+# print(f'IPFS HOST base: {IPFS_HOST}')
 
 
 def get_ipfs_mapper(
@@ -28,6 +28,6 @@ def get_ipfs_mapper(
     """
     if IPFS_HOST is not None:
         host = IPFS_HOST
-    print(f'ipfs mapper host: {host}')
+    # print(f'ipfs mapper host: {host}')
 
     return IPLDStore(IPFSStore(host, chunker=chunker, max_nodes_per_level=max_nodes_per_level), should_async_get=should_async_get)
