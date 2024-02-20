@@ -139,7 +139,7 @@ class HamtMemoryStore:
                 res = requests.post(
                     f"{self._host}/api/v0/block/get",
                     params={"arg": str(cid)},
-                    timeout=60,
+                    timeout=30,
                 )
             except requests.exceptions.ReadTimeout:
                 raise Exception(f"timed out on {str(cid)}")
