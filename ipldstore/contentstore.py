@@ -126,8 +126,9 @@ async def _async_get(host: str, session: aiohttp.ClientSession, cid: CID):
         api_method = "/api/v0/block/get"
     start = time.time()
     async with session.post(host + api_method, params={"arg": str(cid)}) as resp:
+        res = await resp.read()
         print(f'aiohttp POST: {time.time() - start:.3f}s | ({resp.url})')
-        return await resp.read()
+        return res
 
 
 async def _main_async(keys: List[CID], host: str, d: Dict[CID, bytes]):
