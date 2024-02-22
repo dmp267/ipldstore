@@ -5,6 +5,7 @@ from itertools import zip_longest
 
 import aiohttp
 import asyncio
+import time
 
 from multiformats import CID, multicodec, multibase, multihash, varint
 import cbor2
@@ -123,7 +124,9 @@ async def _async_get(host: str, session: aiohttp.ClientSession, cid: CID):
         api_method = "/api/v0/cat"
     else:
         api_method = "/api/v0/block/get"
+    start = time.time()
     async with session.post(host + api_method, params={"arg": str(cid)}) as resp:
+        print(f'aiohttp POST: {time.time() - start:.3f}s | ({resp.url})')
         return await resp.read()
 
 
@@ -134,6 +137,28 @@ async def _main_async(keys: List[CID], host: str, d: Dict[CID, bytes]):
         for i, key in enumerate(keys):
             d[key] = byte_list[i]
 
+
+# def _sync_get(host: str, cid: CID, session):
+#     start = time.time()
+#     if cid.codec == DagPbCodec:
+#         api_method = "/api/v0/cat"
+#     else:
+#         api_method = "/api/v0/block/get"
+
+#     res = session.post(host + api_method, params={"arg": str(cid)})
+#     res.raise_for_status()
+#     print(f'async_get session post time: {time.time() - start}')
+#     return res.json()
+
+
+# def _main_sync(keys: List[CID], host: str, d: Dict[CID, bytes]):
+#     start = time.time()
+#     session = get_retry_session()
+#     byte_list = [_sync_get(host, key, session) for key in keys]
+#     print(f'sync_get time: {time.time() - start}')
+#     for i, key in enumerate(keys):
+#         d[key] = byte_list[i]
+            
 
 class IPFSStore(ContentAddressableStore):
     def __init__(self,
@@ -166,18 +191,20 @@ class IPFSStore(ContentAddressableStore):
     def getitems(self, keys: List[CID]) -> Dict[CID, bytes]:
         ret = {}
         asyncio.run(_main_async(keys, self._host, ret))
+        # _main_sync(keys, self._host, ret)
         return ret
 
     def get_raw(self, cid: CID) -> bytes:
         validate(cid, CID)
 
         session = get_retry_session()
-
+        start = time.time()
         if cid.codec == DagPbCodec:
             res = session.post(self._host + "/api/v0/cat", params={"arg": str(cid)})
         else:
             res = session.post(self._host + "/api/v0/block/get", params={"arg": str(cid)})
         res.raise_for_status()
+        print(f'requests (retry) POST: {time.time() - start:.3f}s | ({res.url})')
         return res.content
 
     def put(self, value: ValueType) -> CID:

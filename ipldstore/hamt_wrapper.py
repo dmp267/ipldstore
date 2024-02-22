@@ -6,6 +6,7 @@ import json
 import psutil
 import requests
 import typing
+import time
 from dask.distributed import Lock, get_client
 from multiformats import CID
 from hashlib import sha256
@@ -133,8 +134,12 @@ class HamtMemoryStore:
         if isinstance(cid, cbor2.CBORTag):
             cid = CID.decode(cid.value[1:]).set(base="base32")
         try:
-            return cbor2.loads(self.mapping[cid])
+            start = time.time()
+            res = cbor2.loads(self.mapping[cid])
+            print(f'cbor load:  {time.time() - start:.3f}s')
+            return res
         except KeyError:
+            start = time.time()
             try:
                 res = requests.post(
                     f"{self._host}/api/v0/block/get",
@@ -144,7 +149,9 @@ class HamtMemoryStore:
             except requests.exceptions.ReadTimeout:
                 raise Exception(f"timed out on {str(cid)}")
             res.raise_for_status()
+            print(f'requests POST: {time.time() - start:.3f}s | {res.url}')
             obj = cbor2.loads(res.content)
+            
             self.mapping[cid] = res.content
             return obj
 
@@ -213,7 +220,9 @@ class HamtWrapper:
             value located at this `key_path`
         """
         try:
-            return self.hamt.get(self.SEP.join(key_path))
+            temp = self.SEP.join(key_path)
+            res = self.hamt.get(temp)
+            return res
         except KeyError:
             return get_recursive(self.others_dict, key_path)
 
