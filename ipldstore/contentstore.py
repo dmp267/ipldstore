@@ -132,10 +132,11 @@ async def _async_get(host: str, session: aiohttp.ClientSession, cid: CID):
 
 async def _main_async(keys: List[CID], host: str, d: Dict[CID, bytes]):
     async with aiohttp.ClientSession() as session:
+        print(f'_main_async numbers of keys: {len(keys)}')
         tasks = [_async_get(host, session, key) for key in keys]
         start = time.time()
         byte_list = await asyncio.gather(*tasks)
-        print(f'async tasks gathered: {time.time() - start}')
+        print(f'_main_async tasks gathered: {time.time() - start}')
         for i, key in enumerate(keys):
             d[key] = byte_list[i]
 
