@@ -82,9 +82,9 @@ class IPLDStore(MutableMappingSB):
             print(f'Asynchronously accessing CID "{cid}" with key "{key}"')
             key_to_bytes_map[key] = cid_to_bytes_map[cid]
         
-        print()
-        print('------------------------------------------------')
         print(f'Data bytes retrieval time:  {time.time() - start}')
+        print('------------------------------------------------')
+        print()
 
         return key_to_bytes_map
 
