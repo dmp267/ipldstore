@@ -18,6 +18,8 @@ from requests.adapters import HTTPAdapter, Retry
 from .car import read_car
 from .utils import StreamLike
 
+# from opentelemetry import trace
+# tracer = trace.get_tracer(__name__)
 
 ValueType = Union[bytes, DagCborEncodable]
 
@@ -133,36 +135,14 @@ async def _async_get(host: str, session: aiohttp.ClientSession, cid: CID):
 
 async def _main_async(keys: List[CID], host: str, d: Dict[CID, bytes]):
     async with aiohttp.ClientSession() as session:
-        print(f'_main_async numbers of keys: {len(keys)}')
+        print(f'_main_async: gathering {len(keys)} tasks')
         tasks = [_async_get(host, session, key) for key in keys]
         start = time.time()
         byte_list = await asyncio.gather(*tasks)
         print(f'_main_async tasks gathered: {time.time() - start}')
         for i, key in enumerate(keys):
             d[key] = byte_list[i]
-
-
-# def _sync_get(host: str, cid: CID, session):
-#     start = time.time()
-#     if cid.codec == DagPbCodec:
-#         api_method = "/api/v0/cat"
-#     else:
-#         api_method = "/api/v0/block/get"
-
-#     res = session.post(host + api_method, params={"arg": str(cid)})
-#     res.raise_for_status()
-#     print(f'async_get session post time: {time.time() - start}')
-#     return res.json()
-
-
-# def _main_sync(keys: List[CID], host: str, d: Dict[CID, bytes]):
-#     start = time.time()
-#     session = get_retry_session()
-#     byte_list = [_sync_get(host, key, session) for key in keys]
-#     print(f'sync_get time: {time.time() - start}')
-#     for i, key in enumerate(keys):
-#         d[key] = byte_list[i]
-            
+                
 
 class IPFSStore(ContentAddressableStore):
     def __init__(self,
@@ -195,7 +175,6 @@ class IPFSStore(ContentAddressableStore):
     def getitems(self, keys: List[CID]) -> Dict[CID, bytes]:
         ret = {}
         asyncio.run(_main_async(keys, self._host, ret))
-        # _main_sync(keys, self._host, ret)
         return ret
 
     def get_raw(self, cid: CID) -> bytes:
