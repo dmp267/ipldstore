@@ -149,7 +149,7 @@ class HamtMemoryStore:
             except requests.exceptions.ReadTimeout:
                 raise Exception(f"timed out on {str(cid)}")
             res.raise_for_status()
-            print(f'requests POST: {time.time() - start:.3f}s | {res.url}')
+            print(f'requests BLOCK GET: {time.time() - start:.3f}s | {res.url}')
             obj = cbor2.loads(res.content)
             
             self.mapping[cid] = res.content
