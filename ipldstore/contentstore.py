@@ -121,30 +121,30 @@ class MappingCAStore(ContentAddressableStore):
         return cid
 
 
-async def _async_get(host: str, session: aiohttp.ClientSession, cid: CID):
+# async def _async_get(host: str, session: aiohttp.ClientSession, cid: CID):
+async def _async_get(host: str, cid: CID):
     if cid.codec == DagPbCodec:
         api_method = "/api/v0/cat"
     else:
         api_method = "/api/v0/block/get"
     start = time.time()
-    async with session.post(host + api_method, params={"arg": str(cid)}) as resp:
-        res = await resp.read()
-        print(f'aiohttp {"CAT" if cid.codec == DagPbCodec else "BLOCK GET"}: {time.time() - start:.3f}s | ({resp.url})')
-        with open('cat.log', 'a') as f:
-            f.write(f'{resp.url}\n')
-            f.close()
-        return res
+    async with aiohttp.ClientSession() as session:
+        async with session.post(host + api_method, params={"arg": str(cid)}) as resp:
+            res = await resp.read()
+            print(f'aiohttp {"CAT" if cid.codec == DagPbCodec else "BLOCK GET"}: {time.time() - start:.3f}s | ({resp.url})')
+            return res
 
 
 async def _main_async(keys: List[CID], host: str, d: Dict[CID, bytes]):
-    async with aiohttp.ClientSession() as session:
-        print(f'_main_async: gathering {len(keys)} tasks')
-        tasks = [_async_get(host, session, key) for key in keys]
-        start = time.time()
-        byte_list = await asyncio.gather(*tasks)
-        print(f'_main_async tasks gathered: {time.time() - start}')
-        for i, key in enumerate(keys):
-            d[key] = byte_list[i]
+    # async with aiohttp.ClientSession() as session:
+    print(f'_main_async: gathering {len(keys)} tasks')
+    # tasks = [_async_get(host, session, key) for key in keys]
+    tasks = [_async_get(host, key) for key in keys]
+    start = time.time()
+    byte_list = await asyncio.gather(*tasks)
+    print(f'_main_async tasks gathered: {time.time() - start}')
+    for i, key in enumerate(keys):
+        d[key] = byte_list[i]
                 
 
 class IPFSStore(ContentAddressableStore):

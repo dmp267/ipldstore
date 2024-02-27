@@ -134,9 +134,7 @@ class HamtMemoryStore:
         if isinstance(cid, cbor2.CBORTag):
             cid = CID.decode(cid.value[1:]).set(base="base32")
         try:
-            start = time.time()
             res = cbor2.loads(self.mapping[cid])
-            print(f'cbor load:  {time.time() - start:.3f}s')
             return res
         except KeyError:
             start = time.time()
